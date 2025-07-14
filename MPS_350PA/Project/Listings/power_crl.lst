@@ -1,0 +1,211 @@
+C51 COMPILER V9.60.7.0   POWER_CRL                                                         07/14/2025 11:08:35 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE POWER_CRL
+OBJECT MODULE PLACED IN ..\Output\power_crl.obj
+COMPILER INVOKED BY: D:\APP\Keil_v5\C51\BIN\C51.EXE ..\BSP\Src\power_crl.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(..\BSP\
+                    -Inc;..\Core\Inc;..\Driver;..\Emembed\Inc;..\SYSTEM\Inc) DEBUG OBJECTEXTEND PRINT(.\Listings\power_crl.lst) OBJECT(..\Out
+                    -put\power_crl.obj)
+
+line level    source
+
+   1          #include "power_crl.h"
+   2          
+   3          AC_CTRL ac_ctrl;
+   4          
+   5          /**
+   6           * @brief       移相触发调用结构体初始化
+   7           *
+   8           * @param   
+   9           *
+  10           * @return  void
+  11          **/
+  12          void Power_Statu_Init( void )
+  13          {
+  14   1          ac_ctrl.zero_flag  = 0;
+  15   1          AC_Out1 = AC_Out2 = AC_Out3 = AC_Out4 = 1;
+  16   1      }
+  17          
+  18          /**
+  19           * @brief       外部中断2中断处理函数
+  20           *
+  21           * @param   
+  22           *
+  23           * @return  void
+  24          **/
+  25          void INT2_ISR( void ) interrupt 10
+  26          {
+  27   1          /* 1, 检测到外部中断后，等待THL\TLI后触发TIM1中断       */
+  28   1          TL1 = ac_ctrl.time_delay;                           
+  29   1              TH1 = ac_ctrl.time_delay >> 8;                          
+  30   1      
+  31   1          ac_ctrl.zero_flag = 1;
+  32   1      
+  33   1          /* 2, 定时器1开始计时，打开TIM1中断                     */
+  34   1          TR1 = 1;                                 
+  35   1          ET1 = 1; 
+  36   1      }
+  37          
+  38          /**
+  39           * @brief       Timer1中断处理函数
+  40           *
+  41           * @param   
+  42           *
+  43           * @return  void
+  44          **/
+  45          void Tim1_ISR( void ) interrupt 3   //1ms
+  46          {
+  47   1          /* 1, 中断触发后，power_ch电平 由高电平变为低电平           */
+  48   1          if( ac_ctrl.zero_flag == 1 )
+  49   1          {
+  50   2              ac_ctrl.zero_flag = 0;
+  51   2              AC_Out4 = 0;
+  52   2      
+  53   2               /* 2, 设置下一次Timer1中断触发所需时间，即脉冲时间       */
+C51 COMPILER V9.60.7.0   POWER_CRL                                                         07/14/2025 11:08:35 PAGE 2   
+
+  54   2              TL1 = 0xF7;                             
+  55   2              TH1 = 0xFF;                             
+  56   2          }else
+  57   1          {
+  58   2              /* 3, 下一次进入Timer1中断，power_ch电平 由低电平变为高电平，完成一次10us�
+             -��冲，即斩波*/
+  59   2              AC_Out4 = 1;
+  60   2      
+  61   2              /* 4, 定时器1停止计时，关闭TIM1中断，等待下一次外部中断     */
+  62   2              TR1 = 0;                                    
+  63   2              ET1 = 0; 
+  64   2          }
+  65   1      }
+  66          
+  67          /**
+  68           * @brief       220V输出功率控制函数 
+  69           *
+  70           * @param   power_level：输出功率百分比  0%~100%
+  71           *
+  72           * @return  void
+  73          **/
+  74          void bake_power_ctrl( uint8_t power_level )
+  75          {
+  76   1          ac_ctrl.time_delay = 56500 + 90 * power_level;
+  77   1      }
+  78          
+  79          /**
+  80           * @brief       220V输出功率控制函数 
+  81           *
+  82           * @param   power_level：输出功率百分比  0%~100%
+  83           *
+  84           * @return  void
+  85          **/
+  86          void bake_fan_ctrl( uint8_t level )
+  87          {
+  88   1          PWMB_CCR8  = level * 184;
+  89   1      }
+  90          
+  91          /**
+  92           * @brief       24V LED开关控制函数
+  93           *
+  94           * @param   on_off：0：关闭 1：开启
+  95           *
+  96           * @return  void
+  97          **/
+  98          void led_ctrl( uint8_t on_off )
+  99          {
+ 100   1          if( on_off == LED_ON )
+ 101   1          {
+ 102   2              DC_24V = 0;
+ 103   2          }else
+ 104   1          {
+ 105   2              DC_24V = 1;
+ 106   2          }
+ 107   1      }
+ 108          
+ 109          /**
+ 110           * @brief       24V PWM风扇档位控制函数
+ 111           *
+ 112           * @param   level :风扇档位 0~6档
+ 113           *
+ 114           * @return  void
+C51 COMPILER V9.60.7.0   POWER_CRL                                                         07/14/2025 11:08:35 PAGE 3   
+
+ 115          **/
+ 116          void fan_ctrl( uint8_t level )
+ 117          {
+ 118   1          PWMB_CCR7  = level * 184;
+ 119   1      }
+ 120          
+ 121          /**
+ 122           * @brief       24V PWM风扇档位控制函数
+ 123           *
+ 124           * @param   level :风扇档位 0~6档
+ 125           *
+ 126           * @return  void
+ 127          **/
+ 128          void ac220_ctrl( uint8_t on_off )
+ 129          {
+ 130   1          if( on_off == POWER_ON )
+ 131   1          {
+ 132   2              AC_Out1 = AC_Out2 = AC_Out3 = 0;
+ 133   2          }else
+ 134   1          {
+ 135   2              AC_Out1 = AC_Out2 = AC_Out3 = 1;
+ 136   2          }
+ 137   1      }
+ 138          
+ 139          /**
+ 140           * @brief       电源开关（受屏幕控制） 
+ 141           *
+ 142           * @param   
+ 143           *
+ 144           * @return  void
+ 145          **/
+ 146          void power_switch_ctrl( uint8_t power_switch )
+ 147          {
+ 148   1          if( power_switch == 0 )
+ 149   1          {
+ 150   2              PWMB_BKR = 0x00; 
+ 151   2              INTCLKO  = 0X00; 
+ 152   2              led_ctrl(LED_OFF);
+ 153   2              AC_Out1 = AC_Out2 = AC_Out3 = 1;
+ 154   2          }else
+ 155   1          {
+ 156   2              PWMB_BKR = 0x80;    //PWM控制
+ 157   2              INTCLKO |= 0X10;             //外部中断控制
+ 158   2              led_ctrl(slave_06.led_switch);
+ 159   2          }
+ 160   1      }
+ 161          
+ 162          /**
+ 163           * @brief       同步控制函数：无外部信号时 PWM风扇和220V输出关闭
+ 164           *
+ 165           * @param   
+ 166           *
+ 167           * @return  void
+ 168          **/
+ 169          void sync_ctrl( void )
+ 170          {
+ 171   1          if( slave_06.sync_switch2 == 1 )
+ 172   1          { 
+ 173   2              INTCLKO  = 0X00; 
+ 174   2              AC_Out1 = AC_Out2 = AC_Out3 = 1;
+ 175   2          }else
+ 176   1          {
+C51 COMPILER V9.60.7.0   POWER_CRL                                                         07/14/2025 11:08:35 PAGE 4   
+
+ 177   2              INTCLKO |= 0X10;             //外部中断控制
+ 178   2          }
+ 179   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    238    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      6    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

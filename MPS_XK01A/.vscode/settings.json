@@ -1,0 +1,15 @@
+{
+    "files.exclude": {
+        "**/.vscode": true
+    },
+    "files.associations": {
+        "modbus_rtu.h": "c",
+        "sys.h": "c",
+        "key_crl.h": "c",
+        "main.h": "c",
+        "pwm_crl.h": "c",
+        "power_crl.h": "c",
+        "tim.h": "c",
+        "gui.h": "c"
+    }
+}

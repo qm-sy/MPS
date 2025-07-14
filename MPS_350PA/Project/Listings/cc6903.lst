@@ -1,0 +1,80 @@
+C51 COMPILER V9.60.7.0   CC6903                                                            07/14/2025 11:08:36 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE CC6903
+OBJECT MODULE PLACED IN ..\Output\cc6903.obj
+COMPILER INVOKED BY: D:\APP\Keil_v5\C51\BIN\C51.EXE ..\BSP\Src\cc6903.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(..\BSP\Inc
+                    -;..\Core\Inc;..\Driver;..\Emembed\Inc;..\SYSTEM\Inc) DEBUG OBJECTEXTEND PRINT(.\Listings\cc6903.lst) OBJECT(..\Output\cc
+                    -6903.obj)
+
+line level    source
+
+   1          #include "cc6903.h"
+   2          
+   3          CURRENT current;
+   4          
+   5          void bubble_sort(uint16_t arr[], uint16_t n) 
+   6          {
+   7   1          uint8_t i, j;
+   8   1          uint16_t temp;
+   9   1          
+  10   1          for (i = 0; i < n-1; i++) {
+  11   2              for (j = 0; j < n-i-1; j++) {
+  12   3                  if (arr[j] > arr[j+1]) {
+  13   4                      // 交换元素
+  14   4                      temp = arr[j];
+  15   4                      arr[j] = arr[j+1];
+  16   4                      arr[j+1] = temp;
+  17   4                  }
+  18   3              }
+  19   2          }
+  20   1      }
+  21          
+  22          void current_init( void )
+  23          {
+  24   1          slave_04.cc6903_24V = 1360;
+  25   1          slave_04.cc6903_36V = 1360;
+  26   1          slave_04.cc6903_42V = 1360;
+  27   1      }
+  28          /**
+  29           * @brief       获取电流值
+  30           *
+  31           * @param   channel_x：电流通道1~3
+  32           *
+  33           * @return  current 
+  34          **/
+  35          uint16_t get_current( uint8_t channel_x)
+  36          {
+  37   1          uint8_t i,t;
+  38   1          uint16_t adc_val = 0;
+  39   1          uint16_t adc_tab[24];
+  40   1          /* 1, 取10次adc_val                           */
+  41   1          for( t = 0; t < 24; t++ )
+  42   1              {
+  43   2                      adc_tab[t] = Get_ADC_12bit(channel_x);
+  44   2              }              
+  45   1          bubble_sort(adc_tab,24);
+  46   1          for(i = 6; i < 18; i++)
+  47   1          {
+  48   2            adc_val += adc_tab[i];
+  49   2          }
+  50   1          adc_val = adc_val/12;
+  51   1      
+  52   1          return adc_val;
+  53   1      }
+C51 COMPILER V9.60.7.0   CC6903                                                            07/14/2025 11:08:36 PAGE 2   
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    427    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      6      61
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
