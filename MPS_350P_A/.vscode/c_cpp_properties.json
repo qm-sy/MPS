@@ -4,9 +4,9 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-                "d:/workspace/MPS/MPS_XK01_A/libRich",
-                "c:/Users/qm/.vscode/extensions/richintelligent.richextension-3.1.10/include",
-                "c:/Users/qm/.vscode/extensions/richintelligent.richextension-3.1.10/include/Atmel"
+                "d:/workspace/MPS/MPS_350PA/libRich",
+                "c:/Users/qm/.vscode/extensions/richintelligent.richextension-3.1.11/include",
+                "c:/Users/qm/.vscode/extensions/richintelligent.richextension-3.1.11/include/Atmel"
             ],
             "defines": [
                 "_DEBUG",
@@ -18,7 +18,7 @@
             ],
             "cStandard": "c89",
             "forcedInclude": [
-                "c:/Users/qm/.vscode/extensions/richintelligent.richextension-3.1.10/include/libRichForced.h"
+                "c:/Users/qm/.vscode/extensions/richintelligent.richextension-3.1.11/include/libRichForced.h"
             ]
         }
     ],
